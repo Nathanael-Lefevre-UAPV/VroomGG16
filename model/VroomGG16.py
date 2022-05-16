@@ -9,6 +9,28 @@ import torchvision.models as models
 from Utils.ColorPrinter import *
 from Utils.Pushover import *
 
+
+class FeatureExtractor(nn.Module):
+    def __init__(self, model):
+        super(FeatureExtractor, self).__init__()
+        # Extract VGG-16 Feature Layers
+        self.features = list(model.features)
+        self.features = nn.Sequential(*self.features)
+        # Extract VGG-16 Average Pooling Layer
+        self.pooling = model.avgpool
+        # Convert the image into one-dimensional vector
+        self.flatten = nn.Flatten()
+        # Extract the first part of fully-connected layer from VGG16
+        self.fc = model.classifier[0]
+
+    def forward(self, x):
+        # It will take the input 'x' until it returns the feature vector called 'out'
+        out = self.features(x)
+        out = self.pooling(out)
+        out = self.flatten(out)
+        out = self.fc(out)
+        return out
+
 class VroomGG16(nn.Module):
     def __init__(self, train_loader, valid_loader, input_dim, hidden_dim, output_dim, n_layers, drop_prob=0.2, device="cpu"):
         super(VroomGG16, self).__init__()
@@ -26,7 +48,8 @@ class VroomGG16(nn.Module):
 
         self.criterion = nn.NLLLoss() #nn.MSELoss()  # F.cross_entropy#nn.BCEWithLogitsLoss # F.cross_entropy # nn.MSELoss()
 
-        '''self.vgg16 = models.vgg16(pretrained=True)
+        '''
+        self.vgg16 = models.vgg16(pretrained=True)
         self.vgg16.classifier = self.vgg16.classifier[:-1]
 
         self.conv1 = nn.Conv2d(3, 10, kernel_size=5)
@@ -36,7 +59,9 @@ class VroomGG16(nn.Module):
         self.fc1 = nn.Linear(320, 50)
         self.fc2 = nn.Linear(50, 5)
 
-        self.fcA = nn.Linear(4096, 5)'''
+        self.fcA = nn.Linear(4096, 5)
+        '''
+        '''
         self.conv1_1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1)
         self.conv1_2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
 
@@ -60,6 +85,18 @@ class VroomGG16(nn.Module):
         self.fc1 = nn.Linear(7168, 4096)
         self.fc2 = nn.Linear(4096, 4096)
         self.fc3 = nn.Linear(4096, 5)
+        '''
+
+        self.vgg16 = models.vgg16(pretrained=True)
+
+        for param in self.vgg16.features.parameters():
+            param.require_grad = False
+
+        self.vgg16 = FeatureExtractor(self.vgg16)
+        self.vgg16 = self.vgg16.to(device)
+        print(self.vgg16)
+
+        self.fc_out = nn.Linear(4096, 5)
 
         self.to(self.device)
 
@@ -86,6 +123,11 @@ class VroomGG16(nn.Module):
         self.best_valid_accuracy = 0
 
     def forward(self, x):
+        x = self.vgg16(x.transpose(1, 3))
+
+        x = self.fc_out(x)
+
+        '''
         x = x.transpose(1, 3).to(self.device)
         x = F.relu(self.conv1_1(x))
         x = F.relu(self.conv1_2(x))
@@ -111,10 +153,15 @@ class VroomGG16(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.dropout(x, 0.5)
         x = self.fc3(x)
-        '''x = self.vgg16(x)
-        x = self.fcA(x)'''
-        '''greenprint(x.shape)
-        input()'''
+        '''
+        '''
+        x = self.vgg16(x)
+        x = self.fcA(x)
+        '''
+        '''
+        greenprint(x.shape)
+        input()
+        '''
         '''x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
         #x = x.view(-1, 23600)
@@ -124,7 +171,7 @@ class VroomGG16(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)'''
-        return F.log_softmax(x)
+        return F.softmax(x)
 
     def fit(self, epoch):
 
@@ -143,7 +190,8 @@ class VroomGG16(nn.Module):
                 self.zero_grad()
 
                 out = self(x.to(self.device).float())
-
+                #print(out)
+                #redprint(label)
                 loss = self.criterion(out, torch.argmax(label, dim=1).to(self.device))
 
                 loss.backward()
