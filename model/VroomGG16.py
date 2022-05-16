@@ -227,7 +227,7 @@ class VroomGG16(nn.Module):
 
                 test_loss += self.criterion(output, torch.argmax(target, dim=1).to(self.device))
 
-                correct += torch.sum(torch.where(torch.argmax(output.to(self.device), dim=1) == torch.argmax(target.data.to(self.device), dim=1), torch.tensor(True).to(self.device), torch.tensor(False).to(self.device)))
+                correct += torch.sum(torch.where(torch.argmax(output.to(self.device), dim=1) == torch.argmax(target.data.to(self.device), dim=1), torch.tensor(True).to(self.device), torch.tensor(False).to(self.device))).cpu().detach()
 
         self.test_accuracy.append(100. * correct / (len(self.test_loader.dataset)))
 
