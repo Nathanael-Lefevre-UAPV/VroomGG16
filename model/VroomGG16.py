@@ -26,9 +26,16 @@ class VroomGG16(nn.Module):
 
         self.criterion = nn.NLLLoss() #nn.MSELoss()  # F.cross_entropy#nn.BCEWithLogitsLoss # F.cross_entropy # nn.MSELoss()
 
-        '''self.vgg16 = models.vgg16(pretrained=True)
-        self.vgg16.classifier = self.vgg16.classifier[:-1]
-
+        #'''
+        self.vgg16 = models.vgg16(pretrained=True)
+        #self.vgg16.classifier = self.vgg16.classifier[:-1]
+        print(self.vgg16.VGG)
+        self.vgg16 = self.vgg16[-1]
+        print(self.vgg16)
+        #print(self.vgg16.classifier)
+        input()
+        #'''
+        #'''
         self.conv1 = nn.Conv2d(3, 10, kernel_size=5)
         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
         self.conv2_drop = nn.Dropout2d()
@@ -36,7 +43,9 @@ class VroomGG16(nn.Module):
         self.fc1 = nn.Linear(320, 50)
         self.fc2 = nn.Linear(50, 5)
 
-        self.fcA = nn.Linear(4096, 5)'''
+        self.fcA = nn.Linear(4096, 3)
+        #'''
+        '''
         self.conv1_1 = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, padding=1)
         self.conv1_2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1)
 
@@ -59,7 +68,8 @@ class VroomGG16(nn.Module):
 
         self.fc1 = nn.Linear(7168, 4096)
         self.fc2 = nn.Linear(4096, 4096)
-        self.fc3 = nn.Linear(4096, 5)
+        self.fc3 = nn.Linear(4096, 3)
+        #'''
 
         self.to(self.device)
 
@@ -86,6 +96,7 @@ class VroomGG16(nn.Module):
         self.best_valid_accuracy = 0
 
     def forward(self, x):
+        '''
         x = x.transpose(1, 3).to(self.device)
         x = F.relu(self.conv1_1(x))
         x = F.relu(self.conv1_2(x))
@@ -111,11 +122,13 @@ class VroomGG16(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.dropout(x, 0.5)
         x = self.fc3(x)
-        '''x = self.vgg16(x)
-        x = self.fcA(x)'''
-        '''greenprint(x.shape)
-        input()'''
-        '''x = F.relu(F.max_pool2d(self.conv1(x), 2))
+        #'''
+        #'''
+        x = self.vgg16(x)
+        x = self.fcA(x)
+        #'''
+        '''
+        x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
         #x = x.view(-1, 23600)
         x = nn.Flatten()(x)
@@ -124,7 +137,8 @@ class VroomGG16(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)'''
-        return F.log_softmax(x)
+        return F.softmax(x)
+        #return F.log_softmax(x)
 
     def fit(self, epoch):
 
@@ -141,6 +155,7 @@ class VroomGG16(nn.Module):
             for batch_idx, (x, label) in enumerate(self.train_loader):
                 counter += 1
                 self.zero_grad()
+                optimizer.zero_grad()
 
                 out = self(x.to(self.device).float())
 
@@ -179,7 +194,7 @@ class VroomGG16(nn.Module):
 
                 test_loss += self.criterion(output, torch.argmax(target, dim=1).to(self.device))
 
-                correct += torch.sum(torch.where(torch.argmax(output.to(self.device), dim=1) == torch.argmax(target.data.to(self.device), dim=1), torch.tensor(True).to(self.device), torch.tensor(False).to(self.device)))
+                correct += torch.sum(torch.where(torch.argmax(output.to(self.device), dim=1) == torch.argmax(target.data.to(self.device), dim=1), torch.tensor(True).to(self.device), torch.tensor(False).to(self.device))).cpu().detach()
 
         self.test_accuracy.append(100. * correct / (len(self.test_loader.dataset)))
 
@@ -187,6 +202,3 @@ class VroomGG16(nn.Module):
         self.test_losses.append(test_loss)
         blueprint('\nTest set: Avg. loss: {:.4f}, Accuracy: {}/{} ({:.0f}% - max: {:.0f}%)\n'.format(
             test_loss, correct, len(self.test_loader.dataset), 100. * correct / (len(self.test_loader.dataset)), np.max(self.test_accuracy)))
-
-
-

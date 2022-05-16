@@ -53,19 +53,22 @@ def from_continue_to_discrete(Y):
         return t
 
     # transform direction angle into a 5 dimensions array of 0 and 1
-    arr_discr = [i for i in range(-2, 3)]
-    threshs = [-100000, -0.7, -0.25, 0.25, 0.7, 100000]
-    ns = [0 for i in range(-2, 3)]
+    #arr_discr = [i for i in range(-2, 3)]
+    #threshs = [-100000, -0.7, -0.25, 0.25, 0.7, 100000]
+    arr_discr = [i for i in range(-1, 2)]
+    threshs = [-100000, -0.10, 0.10, 100000]
+    ns = [0 for i in range(-1, 2)]
 
     Y_new = []
     for elt in Y:
         e = elt[1]
         for i in range(len(threshs)):
             if threshs[i] < e < threshs[i+1]:
-                t = one_hot(i, 5)
+                t = one_hot(i, 3)
                 Y_new.append(t)
                 ns[i] += 1
                 break
+    print("repartition:", ns)
 
     Y = np.array(Y_new)
     return Y, ns
