@@ -72,8 +72,8 @@ def from_continue_to_discrete(Y):
 
 
 def equilibrate_dataset(X, Y, ns):
-    #m = min(ns)
-    m = min([ns[0], ns[2], ns[4]])
+    m = min(ns)
+    #m = min([ns[0], ns[2], ns[4]])
 
     X_by_label = [[] for i in ns]
     Y_by_label = [[] for i in ns]
@@ -108,7 +108,7 @@ def get_datasets(paths, n_images):
     Y, ns = from_continue_to_discrete(Y)
 
     # Equilibrate the dataset between all the possible directions
-    X, Y = equilibrate_dataset(X, Y, ns)
+    # X, Y = equilibrate_dataset(X, Y, ns)
 
     # Shuffle everything
     X, Y = shuffle_data(X, Y)
