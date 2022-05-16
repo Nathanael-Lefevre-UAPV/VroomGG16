@@ -13,7 +13,6 @@ class VroomGG16(nn.Module):
     def __init__(self, train_loader, valid_loader, input_dim, hidden_dim, output_dim, n_layers, drop_prob=0.2, device="cpu"):
         super(VroomGG16, self).__init__()
         self.device = device
-        #self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print("Using {} device".format(self.device))
         self.n_epochs = 4
         self.batch_size_train = 64
