@@ -2,7 +2,7 @@ from ImageDataset import ImageDataset
 from road_simulator.roadsimulator.models.utils import get_datasets
 from model.VroomGG16 import VroomGG16
 
-train_X, train_Y, val_X, val_Y, _, _ = get_datasets(['dataset/2022_03_18_22_14', 'dataset/2022_03_18_18_04'], n_images=30871+22649)
+train_X, train_Y, val_X, val_Y, _, _ = get_datasets(['dataset/newAngle_propre/2022_03_18_22_14', 'dataset/dataset_propre/2022_03_18_18_04'], n_images=30871+22649)
 
 
 if __name__ == "__main__":
