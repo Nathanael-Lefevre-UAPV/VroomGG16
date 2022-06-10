@@ -18,6 +18,7 @@ class FeatureExtractor(nn.Module):
         self.features = nn.Sequential(*self.features)
         # Extract VGG-16 Average Pooling Layer
         self.pooling = model.avgpool
+        greenprint(self.pooling)
         # Convert the image into one-dimensional vector
         self.flatten = nn.Flatten()
         # Extract the first part of fully-connected layer from VGG16
@@ -26,7 +27,12 @@ class FeatureExtractor(nn.Module):
     def forward(self, x):
         # It will take the input 'x' until it returns the feature vector called 'out'
         out = self.features(x)
-        out = self.pooling(out)
+        #cyanprint(out)
+        blueprint(out.shape)
+        redprint(out.shape, self.pooling)
+        print(out.transpose(1, 3).shape)
+        greenprint(7 * 7)
+        out = self.pooling(out.transpose(1, 3))
         out = self.flatten(out)
         out = self.fc(out)
         return out
@@ -175,9 +181,6 @@ class VroomGG16(nn.Module):
 
     def fit(self, epoch):
 
-        # Defining optimizer
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-
         self.train()
         print("Starting Training of VroomGG16 model")
         epoch_times = []
@@ -189,13 +192,13 @@ class VroomGG16(nn.Module):
                 counter += 1
                 self.zero_grad()
 
-                out = self(x.to(self.device).float())
+                out = self(x.to(self.device))#.float())
                 #print(out)
                 #redprint(label)
                 loss = self.criterion(out, torch.argmax(label, dim=1).to(self.device))
 
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
                 avg_loss += loss.item()
                 if counter % self.log_interval == 0:
                     print("Epoch {}......Step: {}/{}....... Average Loss for Epoch: {}".format(ep, counter,
@@ -223,7 +226,7 @@ class VroomGG16(nn.Module):
         with torch.no_grad():
             for data, target in self.test_loader:
 
-                output = self.forward(data.to(self.device).float())
+                output = self.forward(data.to(self.device))#.float())
 
                 test_loss += self.criterion(output, torch.argmax(target, dim=1).to(self.device))
 

@@ -113,9 +113,7 @@ if __name__ == "__main__":
     isolated = region(edges)
     plt.imshow(edges, cmap='Blues_r', vmin=0, vmax=255, interpolation='nearest')
     plt.show()
-    plt.plot(edges)
-    plt.show()
-    plt.plot(isolated)
+    plt.imshow(isolated, cmap='Blues_r', vmin=0, vmax=255, interpolation='nearest')
     plt.show()
     cv2.waitKey(0)
 
@@ -125,7 +123,7 @@ if __name__ == "__main__":
     black_lines = display_lines(copy, averaged_lines)
     # taking wighted sum of original image and lane lines image
     lanes = cv2.addWeighted(copy, 0.8, black_lines, 1, 1)
-    plt.plot(lanes)
+    plt.imshow(lanes, cmap='Blues_r', vmin=0, vmax=255, interpolation='nearest')
     plt.show()
     #cv2_imshow(lanes)
     #cv2.waitKey(0)
